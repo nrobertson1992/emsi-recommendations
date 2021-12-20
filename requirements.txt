@@ -1,0 +1,9 @@
+altair==4.1.0
+inflect==5.3.0
+numpy==1.20.1
+pandas==1.2.4
+Pillow==8.4.0
+requests==2.25.1
+snowflake==0.0.3
+snowflake_connector_python==2.4.6
+st_annotated_text==2.0.0
