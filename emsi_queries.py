@@ -11,8 +11,10 @@ import streamlit as st
 from datetime import datetime
 
 
-
-
+# Define here your dictionary of NAICS 2. Each NAICS name maps to one or more naics codes.
+# For consistency, I'm storing all of the codes as lists, even if there is only one -- it allows me
+# to handle the values in this dictionary consistently. In the future, I'd imagine building this out
+# to support NAICS3, 4, 5, and 6 for more targeted values.
 naics2_dictionary = {
          'Agriculture, Forest, Fishing and Hunting': ['11'],
          'Mining': ['21'], 
@@ -38,7 +40,8 @@ naics2_dictionary = {
 
 
 
-# Get the token.
+# Get the token. In the future, consider if there is a better way to handle hosting thiss
+# client secret on github.
 def get_token(scope, client_id='edx',client_secret='bf4e64b4abb44b0abec812f9a9e6f58c'): 
     
     # Connecting to API for OAuth2 token.
@@ -59,8 +62,7 @@ def get_top_skills(start_date, end_date, company_name, sort, search_type, indust
     # Call JPA (Jobs Postings API).
     headers = {'Authorization': 'Bearer {}'.format(get_token(scope='postings:us')), 'content-type': 'application/json'}
     
-    # Default max limit is 10. Have to 
-    # reach out to Emsi to get more than 10.
+    # Get the top 10 skills for the company.
     if search_type == 'By Company':
         url = 'https://emsiservices.com/jpa/rankings/company_name/rankings/skills_name'
 
@@ -88,6 +90,9 @@ def get_top_skills(start_date, end_date, company_name, sort, search_type, indust
           }
             }"""
 
+    # Get the top 10 skills for the industry. This is limited to NAICS 2. In the future,
+    # You'll need to change how the industry_name works. Perhaps one large dictionary?
+    # Or one dictionary for each NAICS level so you can separate them by filtering?
     elif search_type == 'By Industry':
         url = 'https://emsiservices.com/jpa/rankings/naics2_name/rankings/skills_name'
         
@@ -144,7 +149,8 @@ def get_top_skills(start_date, end_date, company_name, sort, search_type, indust
     
             cs_skill = skill['name']
             cs_skill_list.append(cs_skill)
-    		
+    		    
+            # If significance is how it is being sorted, extract significance.
             if sort == 'significance':
             	cs_significance = skill['significance']
             	cs_significance_list.append(cs_significance)
@@ -158,8 +164,11 @@ def get_top_skills(start_date, end_date, company_name, sort, search_type, indust
     # Write data to df.
     company_skills_df['company'] = cs_company_list
     company_skills_df['skills'] = cs_skill_list
+
+    # If significance is how it is being sorted, created column for significance.
     if sort == 'significance':
         company_skills_df['significance'] = cs_significance_list
+
     company_skills_df['unique_postings'] = cs_unique_postings_list
         
     return company_skills_df    
@@ -171,6 +180,7 @@ def get_top_jobs(start_date, end_date, company_name, sort, search_type, industry
     # Call JPA (Jobs Postings API).
     headers = {'Authorization': 'Bearer {}'.format(get_token(scope='postings:us')), 'content-type': 'application/json'}
     
+    # Get the top 10 jobs for the company.
     if search_type == 'By Company':
         url = 'https://emsiservices.com/jpa/rankings/company_name/rankings/title_name'
     # Default max limit is 10. Have to 
@@ -199,6 +209,10 @@ def get_top_jobs(start_date, end_date, company_name, sort, search_type, industry
           }
             }"""
 
+
+    # Get the top 10 jobs for the industry. This is limited to NAICS 2. In the future,
+    # You'll need to change how the industry_name works. Perhaps one large dictionary?
+    # Or one dictionary for each NAICS level so you can separate them by filtering?
     elif search_type == 'By Industry':
         url = 'https://emsiservices.com/jpa/rankings/naics2_name/rankings/title_name'
 
@@ -255,6 +269,7 @@ def get_top_jobs(start_date, end_date, company_name, sort, search_type, industry
             cs_job = job['name']
             cs_job_list.append(cs_job)
             
+            # If sorting by signficiance, extract that.
             if sort == 'significance':
                 cs_significance = job['significance']
                 cs_significance_list.append(cs_significance)
@@ -268,6 +283,8 @@ def get_top_jobs(start_date, end_date, company_name, sort, search_type, industry
     # Write data to df.
     company_jobs_df['company'] = cs_company_list
     company_jobs_df['jobs'] = cs_job_list
+
+    # If extracting signficance, add a column for that.
     if sort == 'significance':
         company_jobs_df['significance'] = cs_significance_list
     company_jobs_df['unique_postings'] = cs_unique_postings_list
@@ -275,7 +292,10 @@ def get_top_jobs(start_date, end_date, company_name, sort, search_type, industry
     return company_jobs_df
 
 
-
+# This is used to handle the error case when someone searches a company that is now
+# found in the Emsi API. Instead, we return a list of possible search values to help
+# people see the company that are the closest in value to what was searched. This helps
+# Them populate the correct value for a search term.
 def company_query(term):
     
     url = "https://emsiservices.com/jpa/taxonomies/company"

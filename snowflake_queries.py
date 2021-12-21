@@ -13,9 +13,11 @@ import snowflake.connector
 
 
 
-
+# Returns a dataframe of data from edX's Snowflake. You need to find a way
+# store passwords better than this, even for a private GitHub Repo.
 def get_snowflake_data(query, columns):
 
+    # Creation the connection.
     ctx = snowflake.connector.connect(
     user='NROBERTSON@EDX.ORG', ## removed
     password='Thes9Pian2!1992', ## removed
@@ -28,6 +30,7 @@ def get_snowflake_data(query, columns):
     # Establish Snowflake cursor.
     cur = ctx.cursor()
 
+    # Run the query.
     def run_query(query, columns):
         cur.execute(query)
         results = cur.fetchall()
@@ -36,6 +39,8 @@ def get_snowflake_data(query, columns):
         return df
 
     df = run_query(query=query, columns=columns)
+
+    # Return the dataframe.
     return df
 
 
@@ -83,7 +88,7 @@ SELECT
 FROM
     enterprise.map_catalog_query_to_content qtc
 WHERE
-    -- UUID for OC Subscription catalog.
+    -- UUID for B2B Subscription catalog.
     catalog_query_uuid = 'b90a0c2339ca47acb087a31c4586c08b'
 """
 
