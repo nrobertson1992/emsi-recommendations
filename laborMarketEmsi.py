@@ -45,14 +45,19 @@ search = st.sidebar.radio(
 if search == 'By Company':
      company_name = st.sidebar.text_input("Enter the company you are searching for:", "IBM")
      industry_name = '' # You do this to make it easier to handle company vs. industry later. Is there a better way?
+     naics_level = None # You do this to make it easier to handle company vs. industry later. Is there a better way?
 
 # If industry, naics_level is a sidebar select box (only NAICS2 supported for now).
 # If NAICS level is 2, then populate the industry_name with a select sidebar from the NAICS 2 dictionary.
 elif search == 'By Industry':
-     naics_level = st.sidebar.selectbox("What level of NAICS industry are you searching? (only 2 supported)", ("2"))
+     naics_level = st.sidebar.selectbox("What level of NAICS industry are you searching? (only 2 and 3 supported)", ("2","3"))
      if naics_level == "2":
          industry_name = st.sidebar.selectbox("Enter the NAICS industry you are searching for:", tuple(eq.naics2_dictionary.keys()))
          company_name = '' # You do this to make it easier to handle company vs. industry later. Is there a better way?
+     if naics_level == "3":
+         industry_name = st.sidebar.selectbox("Enter the NAICS industry you are searching for:", tuple(eq.naics3_dictionary.keys()))
+         company_name = '' # You do this to make it easier to handle company vs. industry later. Is there a better way?
+
 
 
 # Fill out the rest of the sidebar, which does not rely on conditional logic.
@@ -80,10 +85,10 @@ if metric == 'Jobs':
 # Generate the emsi dataframe based on what is the focus - job or skill.
 if metric == "skills":
     emsi_df = eq.get_top_skills(start_date=start_date,end_date=end_date,company_name=company_name, 
-                                sort=sort, search_type=search, industry_name=industry_name)
+                                sort=sort, search_type=search, industry_name=industry_name, naics=naics_level)
 if metric == "jobs":
     emsi_df = eq.get_top_jobs(start_date=start_date,end_date=end_date,company_name=company_name, 
-                              sort=sort, search_type=search, industry_name=industry_name)
+                              sort=sort, search_type=search, industry_name=industry_name, naics=naics_level)
 
 
 # If there is at least one result in the dataframe, then execute the following.
@@ -155,12 +160,23 @@ if len(emsi_df) > 0:
                 *annots
                 )
 
+    # Create downloadable dataframe.
+    def convert_df(df):
+        return df.to_csv().encode('utf-8')
+
     # If the metric we are looking at is skills, execute the following.
     if metric == 'skills':
 
-
+        col1, col2 = st.columns(2)
         # Allow the user to filter the catalog by catalog type.
-        catalog = st.selectbox("Filter by catalog.", ("All edX Courses","Business Subscription","Online Campus Subscription"))
+        with col1:
+            catalog = st.selectbox("Filter by catalog.", ("All edX Courses","Business Subscription","Online Campus Subscription"))
+        with col2:
+            partner = st.multiselect("Filter by partner", options=courses_df.partner.unique())
+
+        # Filter out courses not included in the partner filter.
+        if len(partner) > 0:
+            courses_df = courses_df[courses_df.partner.isin(partner)]
 
         # Filter out courses not included in the catalog. Skill if catalog is "All edX Courses."
         if catalog == 'Business Subscription':
@@ -174,6 +190,16 @@ if len(emsi_df) > 0:
 
         # Sort values by similarity algorithm and enrollment count.
         courses_df = courses_df.sort_values(by=['intersection_ratio','enrollment_count'], ascending=False)
+
+        csv = convert_df(courses_df)
+
+        st.download_button(
+           "Download all Courses",
+           csv,
+           "results.csv",
+           "text/csv",
+           key='download-csv'
+            )
 
         # You can probably find a better way of executing this. Try to wrap it into a function!
         col1, col2, col3 = st.columns(3)
@@ -212,6 +238,7 @@ if len(emsi_df) > 0:
         with col1:
             # Filter for the catalog type.
             catalog = st.selectbox("Filter by catalog.", ("All edX Courses","Business Subscription","Online Campus Subscription"))
+            partner = st.multiselect("Filter by partner", options=courses_df.partner.unique())
 
         with col2:
             # Some wonkiness. The job titles in the labor market queries are plural, but the job titles in edX ingested data is
@@ -230,6 +257,10 @@ if len(emsi_df) > 0:
         # If there is at least one result.
         if len(job_skills) > 0:
 
+            # Filter out courses not included in the partner filter.
+            if len(partner) > 0:
+                courses_df = courses_df[courses_df.partner.isin(partner)]
+
             # Filter based on catalog type selection.
             if catalog == 'Business Subscription':
                 courses_df = courses_df[courses_df.course_key.isin(sq.b2b_subs_catalog.course_key)]
@@ -242,6 +273,17 @@ if len(emsi_df) > 0:
             
             # Sort results by similarity algorithms.
             courses_df = courses_df.sort_values(by=['intersection_ratio','enrollment_count'], ascending=False)
+
+
+            csv = convert_df(courses_df)
+
+            st.download_button(
+               "Download all Courses",
+               csv,
+               "results.csv",
+               "text/csv",
+               key='download-csv'
+                )
 
 
 

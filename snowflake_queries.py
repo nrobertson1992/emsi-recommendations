@@ -51,6 +51,7 @@ SELECT
     tcs.course_key,
     split_part(tcs.course_key,'+',1) as partner,
     cmc.title,
+    cmc.short_description,
     'https://www.edx.org/course/' || cmc.url_slug as url,
     'https://prod-discovery.edx-cdn.org/' || cmc.image as image_link,
     cmc.enrollment_count,
@@ -72,12 +73,12 @@ AND
 AND
     cmc.draft = False
 GROUP BY
-    1,2,3,4,5,6
+    1,2,3,4,5,6,7
 ORDER BY
-    6 DESC
+    7 DESC
         """
 
-cols1 = ['course_key','partner','title','url','image_link','enrollment_count', 'skills']
+cols1 = ['course_key','partner','title','short_description','url','image_link','enrollment_count', 'skills']
 
 
 # Get business subscription catalog.
