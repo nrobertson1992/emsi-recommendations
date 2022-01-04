@@ -20,7 +20,7 @@ def get_snowflake_data(query, columns):
     # Creation the connection.
     ctx = snowflake.connector.connect(
     user='NROBERTSON@EDX.ORG', ## removed
-    password='Thes9Pian2!1992', ## removed
+    password='Thes9Pian2!!1992', ## removed
     account='edx.us-east-1',
     warehouse='POWER_USER_ADHOC_XL',
     database='PROD',
