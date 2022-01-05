@@ -52,10 +52,10 @@ if search == 'By Company':
 elif search == 'By Industry':
      naics_level = st.sidebar.selectbox("What level of NAICS industry are you searching? (only 2 and 3 supported)", ("2","3"))
      if naics_level == "2":
-         industry_name = st.sidebar.selectbox("Enter the NAICS industry you are searching for:", tuple(eq.naics2_dictionary.keys()))
+         industry_name = st.sidebar.selectbox("Enter the NAICS industry you are searching for:", tuple(sorted(eq.naics2_dictionary.keys())))
          company_name = '' # You do this to make it easier to handle company vs. industry later. Is there a better way?
      if naics_level == "3":
-         industry_name = st.sidebar.selectbox("Enter the NAICS industry you are searching for:", tuple(eq.naics3_dictionary.keys()))
+         industry_name = st.sidebar.selectbox("Enter the NAICS industry you are searching for:", tuple(sorted(eq.naics3_dictionary.keys())))
          company_name = '' # You do this to make it easier to handle company vs. industry later. Is there a better way?
 
 
@@ -172,7 +172,7 @@ if len(emsi_df) > 0:
         with col1:
             catalog = st.selectbox("Filter by catalog.", ("All edX Courses","Business Subscription","Online Campus Subscription"))
         with col2:
-            partner = st.multiselect("Filter by partner", options=courses_df.partner.unique())
+            partner = st.multiselect("Filter by partner", options=sorted(courses_df.partner.unique()))
 
         # Filter out courses not included in the partner filter.
         if len(partner) > 0:
