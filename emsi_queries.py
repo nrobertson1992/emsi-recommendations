@@ -225,7 +225,7 @@ def get_top_skills(start_date, end_date, company_name, sort, search_type, indust
                 },
                 "naics""" + naics + """": [
                  """ + industry_string + """ 
-                ]
+                ]   
             },
           "rank": {
             "by": "unique_postings",
