@@ -18,13 +18,13 @@ import snowflake.connector
 def get_snowflake_data(query, columns):
 
     # Creation the connection.
+    ctx = snowflake.connector.connect(
     user=st.secrets['DB_USERNAME'],
     password=st.secrets['DB_TOKEN'],
     account=st.secrets['info']['account'],
     warehouse=st.secrets['info']['warehouse'],
     database=st.secrets['info']['database'],
     role=st.secrets['info']['role'],
-
         )
 
 
