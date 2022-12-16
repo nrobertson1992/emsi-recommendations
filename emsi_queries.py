@@ -149,7 +149,7 @@ naics_list = [naics2_dictionary,naics3_dictionary]
 
 # Get the token. In the future, consider if there is a better way to handle hosting thiss
 # client secret on github.
-def get_token(scope, client_id='edx',client_secret=st.secrets['info']['emsi_secret'): 
+def get_token(scope, client_id='edx',client_secret=st.secrets['info']['emsi_secret']): 
     
     # Connecting to API for OAuth2 token.
     # Setting up payload with id, secret, and scope.
